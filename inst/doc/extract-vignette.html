@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="James Stimson with light editing and updating by Dave Armstrong" />
+
+
+<title>Documentation for the Dyad Ratios Algorithm</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Documentation for the Dyad Ratios
+Algorithm</h1>
+<h4 class="author">James Stimson with light editing and updating by Dave
+Armstrong</h4>
+
+
+
+<div id="general" class="section level2">
+<h2>General</h2>
+<p><code>extract()</code> is an R function which implements the dyad
+ratios algorithm described in Stimson (2018) for constructing a latent
+time series from the raw materials of survey research marginals. It
+inputs data in archival form, as dated survey results, aggregates them
+into regular periods selected at run time, and extracts the latent
+dimension(s) which best account for the raw series.</p>
+<p>Although its central mathematics is entirely different - based upon
+ratios of comparable observed series rather than covariance of
+“variables” - its behavior is strongly analogous to extraction of a
+“factor score” in standard (iterative) principal components
+analysis.</p>
+</div>
+<div id="usage" class="section level2">
+<h2>Usage</h2>
+<p>The routine is called from R by the command:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>output<span class="ot">&lt;-</span> <span class="fu">extract</span>(varname, date, index, <span class="at">ncases=</span><span class="cn">NULL</span>, </span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>  <span class="at">unit=</span><span class="st">&quot;A&quot;</span>, <span class="at">mult=</span><span class="dv">1</span>, <span class="at">begindt=</span><span class="cn">NA</span>, <span class="at">enddt=</span><span class="cn">NA</span>, <span class="at">npass=</span><span class="dv">1</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>  <span class="at">smoothing=</span><span class="cn">TRUE</span>, <span class="at">endmonth=</span><span class="dv">12</span>)</span></code></pre></div>
+<div id="arguments" class="section level3">
+<h3>Arguments</h3>
+<p>The first three arguments must be specified by the user, others are
+optional:</p>
+<ol style="list-style-type: decimal">
+<li><p><code>varname</code> is an <span class="math inline">\(n\)</span>-length vector containing names given to
+input series. The routine assumes that any two observations with the
+same name are comparable and that any change in name signals
+noncomparability. Ratios are computed only between comparable
+observations.</p></li>
+<li><p><code>date</code> is an <span class="math inline">\(n\)</span>-length vector of dates, typically one
+of the dates of survey field work (e.g., first, last, or median day).
+This should be recorded in a date format. For example, if you had the
+string “2025-01-01”, you could use
+<code>lubridate::ymd(&quot;2025-01-01&quot;)</code> to convert it to a date
+format.</p></li>
+<li><p><code>index</code> is an <span class="math inline">\(n\)</span>-length vector of the numeric summary
+value of the result. It might be a percent or proportion responding in a
+single category, (e.g., the “approve” response in presidential approval)
+or some multi-response summary, for example,</p></li>
+</ol>
+<p><span class="math display">\[\text{Index} = \frac{\text{Percent
+Agree}}{\text{Percent Agree} + \text{Percent Disagree}}\]</span></p>
+<p>Interpretation of the derived latent dimension is eased by having the
+index coded such that polarity is the same across items—for example, if
+the concept being measured is liberalism, then high values always stand
+for the more liberal response - but as in principal component analysis,
+the routine deals appropriately with polarity switches.</p>
+<ol start="4" style="list-style-type: decimal">
+<li><p><code>ncases</code> is an <span class="math inline">\(n\)</span>-length vector giving the number of
+cases for each value in <code>index</code>, typically sample size, is
+used during aggregation to produce a weighted average when multiple
+readings fall in one aggregation period. If this issue doesn’t occur or
+if the user prefers an unweighted average, then ncases=NULL—or omitting
+the ncases variable—will ignore case weighting. In the case of a mix of
+available and missing ncases indicators, 0 or NA values are reset to
+1000.</p></li>
+<li><p><code>unit</code> is the aggregation period, “D” (daily), “M”
+(monthly), “Q” (quarterly), “A” (annual, default), “O” (other, for
+multi-year aggregation). <code>mult</code> is the number of years, used
+only for unit option “O”.</p></li>
+<li><p><code>begindt</code> is the beginning date for analysis. Default
+(<code>NA</code>) determines beginning date from the earliest date in
+the data. Entries for beginning and ending date use the ISOdate
+function. For example, to start an analysis in January, 1993, enter
+<code>ISOdate(1993,1,1)</code>. (As always, R is case sensitive. So
+“ISO” must be caps and “date” lower case.)</p></li>
+<li><p><code>enddt</code> is the ending date for analysis. Default
+(<code>NA</code>) determines ending date from the latest date in the
+data.</p></li>
+</ol>
+<p>Warning: The routine cannot determine the earliest or latest dates of
+items which not actually are used in the analysis. The criterion for
+usage is that items must appear in more than one period <em>after</em>
+aggregation. So if the beginning or ending dates are determined by an
+item which is discarded because it does not meet this criterion, the
+routine will fail.</p>
+<ol start="8" style="list-style-type: decimal">
+<li><p><code>smoothing</code> specifies whether or not exponential
+smoothing is applied to intermediate estimates during the iterative
+solution process. Default is TRUE.</p></li>
+<li><p><code>npass</code> number of dimensions to be extracted can be 1
+or 2, defaults to 1.</p></li>
+</ol>
+</div>
+</div>
+<div id="dating-considerations" class="section level2">
+<h2>Dating Considerations</h2>
+<p>The routine expects a date variable of R class <code>date</code>.
+Generally, import packages like <code>foreign</code>,
+<code>readr</code>, <code>haven</code>, <code>rio</code> will try to
+turn date-looking variables into date objects. The <code>str()</code>
+function will identify if your variable is a date or character. We can
+see from the output below that the <code>date</code> variable in the
+<code>jennings</code> dataset is indeed in a <code>date</code>
+format.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(DyadRatios)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">data</span>(jennings)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">str</span>(jennings<span class="sc">$</span>date)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt;  Date[1:295], format: &quot;1973-12-01&quot; &quot;1986-05-24&quot; &quot;1987-05-05&quot; &quot;1991-06-08&quot; &quot;1994-07-26&quot; ...</span></span></code></pre></div>
+<p>If your variable is not already in a date format, you can transform
+it as such with the functions from the <code>lubridate</code> package.
+For example, if your date variable is in the format “2025-01-01”, you
+can use the <code>ymd()</code> function to convert it to a date format
+as follows:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; Attaching package: &#39;lubridate&#39;</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; The following objects are masked from &#39;package:base&#39;:</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt;     date, intersect, setdiff, union</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>temp <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">survey_date =</span> <span class="fu">c</span>(<span class="st">&quot;2025-01-01&quot;</span>, <span class="st">&quot;2024-10-13&quot;</span>, <span class="st">&quot;2020-05-13&quot;</span>))</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="fu">str</span>(temp)</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; &#39;data.frame&#39;:    3 obs. of  1 variable:</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt;  $ survey_date: chr  &quot;2025-01-01&quot; &quot;2024-10-13&quot; &quot;2020-05-13&quot;</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>temp<span class="sc">$</span>survey_date <span class="ot">&lt;-</span> <span class="fu">ymd</span>(temp<span class="sc">$</span>survey_date)</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="fu">str</span>(temp)</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; &#39;data.frame&#39;:    3 obs. of  1 variable:</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt;  $ survey_date: Date, format: &quot;2025-01-01&quot; &quot;2024-10-13&quot; ...</span></span></code></pre></div>
+<p>See how the class changed from <code>chr</code> to
+<code>Date</code>.</p>
+<p>If you happened to have three variables for month, day and year, you
+could paste them together and use the <code>lubridate</code>
+functions:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>temp <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">year=</span> <span class="fu">c</span>(<span class="dv">2025</span>, <span class="dv">2024</span>, <span class="dv">2020</span>), </span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>                   <span class="at">month =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">5</span>), </span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>                   <span class="at">day =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">13</span>, <span class="dv">13</span>))</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>temp<span class="sc">$</span>date <span class="ot">&lt;-</span> lubridate<span class="sc">::</span><span class="fu">ymd</span>(<span class="fu">paste</span>(temp<span class="sc">$</span>year, temp<span class="sc">$</span>month, temp<span class="sc">$</span>day, <span class="at">sep=</span><span class="st">&quot;-&quot;</span>))</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="fu">str</span>(temp)</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt; &#39;data.frame&#39;:    3 obs. of  4 variables:</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt;  $ year : num  2025 2024 2020</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;  $ month: num  1 10 5</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt;  $ day  : num  1 13 13</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt;  $ date : Date, format: &quot;2025-01-01&quot; &quot;2024-10-13&quot; ...</span></span></code></pre></div>
+<p>Warning: The <code>lubridate</code> functions will not handle fake
+dates (for example, 1-32-05). It decodes dates that actually existed on
+past calendars or will exist on future ones (e.g., no Feb 29 unless year
+is actually a leap year.)</p>
+<p>Ideally, the dates will be in a structured format. The lubridate
+functions will even parse string dates with words, e.g., “January 1,
+1993” or “Aug 2, 2020” so long as the strings have month, day and year
+in the same position in the date.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>temp <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">date =</span> <span class="fu">c</span>(<span class="st">&quot;January 1, 1993&quot;</span>, <span class="st">&quot;Jan 1, 1993&quot;</span>, <span class="st">&quot;Aug 2, 2020&quot;</span>))</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>temp<span class="sc">$</span>date <span class="ot">&lt;-</span> <span class="fu">mdy</span>(temp<span class="sc">$</span>date)</span></code></pre></div>
+<p>The formats produced by importing excel or csv documents will not be
+identical to those produced by <code>lubridate</code> functions, but
+they will still work with the <code>extract()</code> function as their
+components can still be extracted by the <code>lubridate()</code>
+functions <code>month()</code>, <code>day()</code> and
+<code>year()</code>.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>temp <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">date =</span> <span class="fu">ymd</span>(<span class="st">&quot;2025-01-01&quot;</span>, <span class="st">&quot;1990-01-01&quot;</span>, <span class="st">&quot;1970-01-01&quot;</span>, <span class="st">&quot;1950-01-01&quot;</span>))</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>xl_temp <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.xlsx&quot;</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>csv_temp <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.csv&quot;</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>rio<span class="sc">::</span><span class="fu">export</span>(temp, xl_temp)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>rio<span class="sc">::</span><span class="fu">export</span>(temp, csv_temp)</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>temp_xl <span class="ot">&lt;-</span> rio<span class="sc">::</span><span class="fu">import</span>(xl_temp)</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>temp_csv <span class="ot">&lt;-</span> rio<span class="sc">::</span><span class="fu">import</span>(csv_temp)</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="fu">str</span>(temp_xl)</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; &#39;data.frame&#39;:    4 obs. of  1 variable:</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt;  $ date: POSIXct, format: &quot;2025-01-01&quot; &quot;1990-01-01&quot; ...</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="fu">str</span>(temp_csv)</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt; &#39;data.frame&#39;:    4 obs. of  1 variable:</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt;  $ date: IDate, format: &quot;2025-01-01&quot; &quot;1990-01-01&quot; ...</span></span></code></pre></div>
+<p>Notice that from excel, you get a <code>POSIXct</code> format
+variable and from csv you get an <code>IDate</code> object. They still
+are equal in integer form to the <code>lubridate</code> way. All values
+pass the equivalence test.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">all</span>(temp<span class="sc">$</span>date <span class="sc">==</span> temp_xl<span class="sc">$</span>date)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">all</span>(temp<span class="sc">$</span>date <span class="sc">==</span> temp_csv<span class="sc">$</span>date)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+</div>
+<div id="output" class="section level2">
+<h2>Output</h2>
+<p>The <code>extract</code> function produces as output 8 categories of
+information:</p>
+<ol style="list-style-type: decimal">
+<li><code>formula</code> reproduces the user call</li>
+<li><code>setup</code> supplies basic information about options and the
+iterative solution</li>
+<li><code>period</code> is a list of the aggregation periods, for
+example, 2005.02 for February, 2005</li>
+<li><code>varname</code> is a list in order of the variables actually
+used in the analysis, a subset of all those in the data.</li>
+<li><code>loadings</code> are the item-scale correlations from the final
+solution. Their square is the validity estimate used in weighting.</li>
+<li><code>means</code> and <code>std.deviations</code> document the item
+descriptive information, and</li>
+<li><code>latent</code> is the estimated time series, the purpose of
+everything. The variable <code>latent1</code> is for the first dimension
+and <code>latent2</code> for the second, if applicable.</li>
+<li>Diagnostic Information: there are several additional objects
+returned in the output, including <code>hist</code> - the iteration
+history, <code>totalvar</code> - the total variance to be explained,
+<code>var_exp</code> - the variance explained by each dimension,
+<code>dropped</code> - any series dropped from the analysis, and
+<code>smoothing</code> - whether smoothing was applied during the
+iterative solution process.</li>
+</ol>
+<div id="output-functions" class="section level3">
+<h3>Output Functions</h3>
+<p>The raw output object created at run time contains everything of
+interest, but in an inconvenient format. There are several functions
+that can be used to display results in different ways.</p>
+<ol style="list-style-type: decimal">
+<li><p><code>plot</code> displays a time series ggplot of the number of
+dimensions estimated on y axes against time units on the x axis and can
+be called with <code>plot(object)</code></p></li>
+<li><p><code>print</code> displays the output of the iterative solution
+process. This is what previously was printed with
+<code>verbose=TRUE</code> which has been removed in favor of a print
+method for the function output.</p></li>
+<li><p><code>summary</code> displays information about the raw series of
+the analysis. Under the heading: “Variable Name Cases Loading Mean Std
+Dev” it lists as many series as are used in the solution, giving
+variable name, number of cases (after aggregation), dimension loadings,
+and means and standard deviations of the raw series.</p></li>
+<li><p><code>get_mood</code> retrieves the period and latent dimension
+estimate(s) from the model object and returns them in a data
+frame.</p></li>
+</ol>
+</div>
+<div id="negative-correlations" class="section level3">
+<h3>Negative Correlations?</h3>
+<p>Correlations, in the case of time series, measure whether two series
+vary in or out of phase. Thus the cross-sectional interpretation of the
+negative correlation—that two items are inversely related - does not
+hold. It is not unusual to observe negative “loadings” in extract
+analyses. They mean only that items move out of phase, not that they are
+opposites.</p>
+</div>
+</div>
+<div id="model" class="section level2">
+<h2>Model</h2>
+<p>Assume <span class="math inline">\(N\)</span> survey results, each
+coded into a meaningful single indicator. These results consist of <span class="math inline">\(n\)</span> subsets of comparable items measured at
+different times, <span class="math inline">\(t={1,\ldots, T}\)</span>.
+Designate each result <span class="math inline">\(x_{it}\)</span>, where
+the <span class="math inline">\(i\)</span> subscript indicates item and
+<span class="math inline">\(t\)</span> indicates aggregation period,
+<span class="math inline">\(1,\ldots, T\)</span>.</p>
+<p>The starting assumption is that ratios, <span class="math inline">\(r_{it+k} = \frac{x_it+k}{x_{it}}\)</span> of the
+comparable item <span class="math inline">\(i\)</span> at different
+times will be meaningful indicators of the latent concept to be
+extracted. Metric information is thus lost, which is desirable because
+absent a science of question wording, we have no ability to compare
+different items. If there were no missing observations, then for each
+item <span class="math inline">\(i\)</span>, we could let <span class="math inline">\(r_{i1}=1.0\)</span> and observe the complete set
+of ratios, <span class="math inline">\(r_{i2}, r_{i3}, \ldots,
+r_{iT}\)</span>. Then an average across the n items forms an excellent
+estimate of the latent concept <span class="math inline">\(\theta_{t}\)</span>:</p>
+<p><span class="math display">\[\theta_{t} =
+\frac{\sum_{i=1}^{n}r_{it}}{n}\]</span></p>
+<p>But we do have missing x’s - and in the typical case it is most of
+them. We would still be in good shape if we had a common period, say
+period 1, which was available for all series. We could then form the sum
+from the <span class="math inline">\(k\)</span> available items, <span class="math inline">\(k\leqn\)</span>, and divide by <span class="math inline">\(k\)</span>. But we also lack such a common period.
+That motivates a recursive approach.</p>
+<p><strong>Forward Recursion</strong>: Begin by selecting that subset of
+items which are available at time 1. For them we can form <span class="math inline">\(\hat{\theta}\)</span> for <span class="math inline">\(t=1,\ldots, T\)</span> setting <span class="math inline">\(\hat{\theta}_{1} = 1.0\)</span> and calculating
+<span class="math inline">\(\hat{\theta}_{2}, \ldots,
+\hat{\theta}_{T}\)</span> from whatever subsets of items are available.
+Now proceed to period 2, setting <span class="math inline">\(\hat{\theta}_{2}\)</span> to that value estimated
+from period 1 and now, using the subset of items which include period 2,
+estimating <span class="math inline">\(\hat{\theta}_{3}, \ldots,
+\hat{\theta}_{T}\)</span> from the assumption that <span class="math inline">\(\theta_{2} = \hat{\theta}_{2}\)</span>. By
+projecting <span class="math inline">\(\hat{\theta}_{2}\)</span> forward
+in this manner, the estimates for periods 3 through <span class="math inline">\(T\)</span> become comparable to what they would
+have been had period 1 information been available. This procedure is
+repeated one period at a time through <span class="math inline">\(T-1\)</span>, giving from 1 to <span class="math inline">\(T-1\)</span> different estimates of each of the
+<span class="math inline">\(\theta_{t}\)</span>. An average of all of
+them becomes <span class="math inline">\(\hat{\theta}_{t}\)</span>.</p>
+<p><strong>Backward Recursion</strong>: It will be seen that forward
+recursion very heavily weights early information relative to later
+information. Period 1 contributes to all subsequent estimates,whereas
+period <span class="math inline">\(T-1\)</span> contributes only to
+<span class="math inline">\(T\)</span>, and period <span class="math inline">\(T\)</span> only to itself. Thus the direction of
+recursion matters. Employing the same procedure backward puts a
+different weight on the items and gives a comparable, but not identical,
+set of estimates. Thus a more efficient set of estimates, one weighting
+all information equally, can be gained by averaging the two recursive
+estimates. (And the correlation between forward and backward series
+becomes a reliability estimate.)</p>
+<div id="iterative-validity-estimation" class="section level3">
+<h3>Iterative Validity Estimation</h3>
+<p>As in iterated principal components we both make assumptions about
+item validity and then, post hoc, have the ability to observe empirical
+estimates of validities (the square of item/scale correlations). At the
+beginning validities are assumed to be 1.0 for all items. Then the
+empirically estimated validities become assumed validities for the next
+iteration. This procedure is repeated until the difference between
+assumed and estimated validities is effectively zero for all items, the
+maximum item discrepancy less than .001.</p>
+</div>
+</div>
+<div id="example" class="section level2">
+<h2>Example</h2>
+<p>We illustrate the use of <code>extract</code> with the data from
+Jennings et. al. (2017) who graciously shared their data through
+dataverse. The first few observations show the question names, dates,
+percentage distrusting in government, and sample size.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">library</span>(DyadRatios)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">data</span>(jennings)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="fu">head</span>(jennings)</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co">#&gt;       variable       date value    n</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt; 1 govtrust_bsa 1973-12-01  15.2 1857</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt; 2 govtrust_bsa 1986-05-24  11.8 1548</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt; 3 govtrust_bsa 1987-05-05  11.2 1410</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt; 4 govtrust_bsa 1991-06-08  14.1 1445</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; 5 govtrust_bsa 1994-07-26  21.2 1137</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt; 6 govtrust_bsa 1996-06-01  23.5 1180</span></span></code></pre></div>
+<p>We could see how many questions there are in the data.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">library</span>(dplyr) </span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="co">#&gt; Attaching package: &#39;dplyr&#39;</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co">#&gt; The following objects are masked from &#39;package:stats&#39;:</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt;     filter, lag</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; The following objects are masked from &#39;package:base&#39;:</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>jennings <span class="sc">%&gt;%</span> </span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>  <span class="fu">group_by</span>(variable) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>  <span class="fu">tally</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n))</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; # A tibble: 37 × 2</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt;    variable         n</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;        &lt;int&gt;</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt;  1 eb_trustprl     30</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt;  2 eb_trustgov     29</span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt;  3 govtrust_bsa    20</span></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co">#&gt;  4 h_govsys        20</span></span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co">#&gt;  5 trust_mori2     18</span></span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co">#&gt;  6 trust_mori1     17</span></span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a><span class="co">#&gt;  7 bsa_poltrust    15</span></span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="co">#&gt;  8 bsa_MPs         14</span></span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a><span class="co">#&gt;  9 bsa_votes       14</span></span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a><span class="co">#&gt; 10 bes_mpstrust     8</span></span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a><span class="co">#&gt; # ℹ 27 more rows</span></span></code></pre></div>
+<p>We can now estimate the dyad ratios algorithm:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>jennings_out <span class="ot">&lt;-</span> <span class="fu">extract</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  <span class="at">varname =</span> jennings<span class="sc">$</span>variable, </span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>  <span class="at">date =</span> jennings<span class="sc">$</span>date, </span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="at">index =</span> jennings<span class="sc">$</span>value, </span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  <span class="at">ncases =</span> jennings<span class="sc">$</span>n, </span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>  <span class="at">begindt =</span> <span class="fu">min</span>(jennings<span class="sc">$</span>date), </span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>  <span class="at">enddt =</span> <span class="fu">max</span>(jennings<span class="sc">$</span>date), </span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>  <span class="at">npass=</span><span class="dv">1</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>)</span></code></pre></div>
+<p>We can print the information about the estimates with:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">print</span>(jennings_out)</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="co">#&gt; Estimation report:</span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co">#&gt; Period: 1944  to 2016 ,  73  time points</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="co">#&gt; Number of series:  37 </span></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="co">#&gt; Number of usable series:  37 </span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="co">#&gt; Exponential smoothing:  Yes </span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="co">#&gt; Iteration history: </span></span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="co">#&gt;  </span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="co">#&gt;    Dimension Iter Convergence Criterion Reliability Alphaf Alphab</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="co">#&gt;  Dimension 1    1      0.1364     0.001       0.923  0.500    0.5</span></span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="co">#&gt;  Dimension 1    2      0.0159     0.001       0.920  0.507    0.5</span></span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a><span class="co">#&gt;  Dimension 1    3      0.0041     0.001       0.918  0.510    0.5</span></span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a><span class="co">#&gt;  Dimension 1    4      0.0011     0.001       0.917  0.511    0.5</span></span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a><span class="co">#&gt;  Dimension 1    5       3e-04     0.001       0.917  0.511    0.5</span></span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a><span class="co">#&gt;  </span></span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a><span class="co">#&gt; Total Variance to be Explained =  3.49 </span></span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a><span class="co">#&gt; Percent Variance Explained: </span></span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a><span class="co">#&gt;    Dimension Variance Proportion</span></span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a><span class="co">#&gt;  Dimension 1     1.77      0.506</span></span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a><span class="co">#&gt;  </span></span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a><span class="co">#&gt; Final Weighted Average Metric:  Mean:  51.72  St. Dev:  4.54</span></span></code></pre></div>
+<p>Our latent dimension explains about <span class="math inline">\(50\%\)</span> of the variance in the raw series.
+We could also look at the loadings:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">summary</span>(jennings_out)</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="co">#&gt; Variable Loadings and Descriptive Information: Dimension 1</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co">#&gt; Variable Name Cases Loading    Mean  Std Dev </span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#&gt;  bes_govtrust     2    1.0000 10.9000  1.700000 </span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#&gt;  bes_mpstrust     3    0.9987 52.7362  3.119561 </span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="co">#&gt;     bes_nosay     4    0.9902 51.4250  5.053897 </span></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="co">#&gt;   bes_parties     2    1.0000 23.1822  5.119276 </span></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="co">#&gt;  bes_polmoney     3    0.6010 58.5526  1.032933 </span></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co">#&gt; bes_polstrust     3    0.5115 52.0000  6.531973 </span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co">#&gt;   bes_wmtrust     2    1.0000 35.5000  5.500000 </span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="co">#&gt;       bsa_MPs    14    0.3353 74.0429  2.244585 </span></span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a><span class="co">#&gt; bsa_govtrust2     3   -0.7752 61.6667  0.713364 </span></span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a><span class="co">#&gt;   bsa_parties     7    0.6127 68.2143  3.015876 </span></span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a><span class="co">#&gt;      bsa_pols     2    1.0000 43.5000  2.500000 </span></span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a><span class="co">#&gt;  bsa_poltrust    15    0.3153 91.9200  1.534579 </span></span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a><span class="co">#&gt;     bsa_votes    14    0.6426 72.9071  3.774627 </span></span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a><span class="co">#&gt;   cspl_pubstd     5    0.9347 18.6000  6.468385 </span></span>
+<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a><span class="co">#&gt;     eb_polcor     2   -1.0000 59.7100  1.670000 </span></span>
+<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a><span class="co">#&gt;   eb_trustgov    16    0.8686 64.9280  7.005034 </span></span>
+<span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a><span class="co">#&gt;   eb_trustprl    17    0.9451 59.3270  7.114013 </span></span>
+<span id="cb12-21"><a href="#cb12-21" tabindex="-1"></a><span class="co">#&gt;    efficacy_g     2    1.0000 69.5000  1.500000 </span></span>
+<span id="cb12-22"><a href="#cb12-22" tabindex="-1"></a><span class="co">#&gt; ess_trustparl     7    0.4183 48.5786  2.430828 </span></span>
+<span id="cb12-23"><a href="#cb12-23" tabindex="-1"></a><span class="co">#&gt;  ess_trustpol     7    0.0927 61.8500  2.343636 </span></span>
+<span id="cb12-24"><a href="#cb12-24" tabindex="-1"></a><span class="co">#&gt;   govtrust2_m     2    1.0000 45.5000  2.500000 </span></span>
+<span id="cb12-25"><a href="#cb12-25" tabindex="-1"></a><span class="co">#&gt;  govtrust_bsa    20    0.8655 24.7150  7.980932 </span></span>
+<span id="cb12-26"><a href="#cb12-26" tabindex="-1"></a><span class="co">#&gt;    govtrust_m     2    1.0000 69.0063  1.993737 </span></span>
+<span id="cb12-27"><a href="#cb12-27" tabindex="-1"></a><span class="co">#&gt;      h_govsys    19    0.5766 62.6721  7.635968 </span></span>
+<span id="cb12-28"><a href="#cb12-28" tabindex="-1"></a><span class="co">#&gt;      h_mpssat     5    0.6464 38.0000  3.098387 </span></span>
+<span id="cb12-29"><a href="#cb12-29" tabindex="-1"></a><span class="co">#&gt;     h_parlsat     6    0.6778 34.3333  1.885618 </span></span>
+<span id="cb12-30"><a href="#cb12-30" tabindex="-1"></a><span class="co">#&gt;      improp_g     5    0.9095 57.6000  8.114185 </span></span>
+<span id="cb12-31"><a href="#cb12-31" tabindex="-1"></a><span class="co">#&gt;      mpgain_m     4    0.9627 57.0000  9.617692 </span></span>
+<span id="cb12-32"><a href="#cb12-32" tabindex="-1"></a><span class="co">#&gt;     pollies_g     4    0.9532 82.2500  3.832427 </span></span>
+<span id="cb12-33"><a href="#cb12-33" tabindex="-1"></a><span class="co">#&gt;      polmor_g     4    0.7075 54.2500 11.431863 </span></span>
+<span id="cb12-34"><a href="#cb12-34" tabindex="-1"></a><span class="co">#&gt;        pols_g     3    0.9913 40.3333  5.557777 </span></span>
+<span id="cb12-35"><a href="#cb12-35" tabindex="-1"></a><span class="co">#&gt;     pols_mori     6    0.4465 53.6667  5.120764 </span></span>
+<span id="cb12-36"><a href="#cb12-36" tabindex="-1"></a><span class="co">#&gt;       spint_g     2    1.0000 72.0000  5.000000 </span></span>
+<span id="cb12-37"><a href="#cb12-37" tabindex="-1"></a><span class="co">#&gt;   trust_mori1    17    0.3702 73.4118  3.465100 </span></span>
+<span id="cb12-38"><a href="#cb12-38" tabindex="-1"></a><span class="co">#&gt;   trust_mori2    18    0.6150 75.6111  3.111607 </span></span>
+<span id="cb12-39"><a href="#cb12-39" tabindex="-1"></a><span class="co">#&gt;    trustmps_m     4    0.8029 68.5006  5.852612 </span></span>
+<span id="cb12-40"><a href="#cb12-40" tabindex="-1"></a><span class="co">#&gt;    trustown_m     4   -0.4189 40.7500  4.023369</span></span></code></pre></div>
+<p>Some of these have much higher loadings than others. That means, they
+are more reliable indicators of government (dis)trust than others. For
+example, <code>govtrust_bsa</code> (actual question from the BSA: “Do
+not trust British governments to place needs of the nation above
+interests of their own party?”) is a very reliable indicator with
+observations in 20 different time-periods. On the other hand,
+<code>bse_MPs</code> (actual question from the BSA: “Those we elect as
+MPs lose touch with people pretty quickly”) has a quite lower loading
+indicating it is a much less reliable indicator of (dis)trust. We can
+also make a plot of mood:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">plot</span>(jennings_out)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>Finally, to retrieve the latent dimension and the periods, we can use
+the <code>get_mood</code> function:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>ests <span class="ot">&lt;-</span> <span class="fu">get_mood</span>(jennings_out)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>ests</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="co">#&gt;    period  latent1</span></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="co">#&gt; 1    1944 49.08698</span></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="co">#&gt; 2    1945 47.69880</span></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a><span class="co">#&gt; 3    1946 47.00470</span></span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a><span class="co">#&gt; 4    1947 46.65765</span></span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a><span class="co">#&gt; 5    1948 46.48413</span></span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a><span class="co">#&gt; 6    1949 46.39737</span></span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a><span class="co">#&gt; 7    1950 46.35399</span></span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a><span class="co">#&gt; 8    1951 46.33230</span></span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a><span class="co">#&gt; 9    1952 46.32145</span></span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a><span class="co">#&gt; 10   1953 46.31603</span></span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a><span class="co">#&gt; 11   1954 46.31332</span></span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a><span class="co">#&gt; 12   1955 46.31196</span></span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a><span class="co">#&gt; 13   1956 46.31128</span></span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a><span class="co">#&gt; 14   1957 46.31095</span></span>
+<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a><span class="co">#&gt; 15   1958 46.31078</span></span>
+<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a><span class="co">#&gt; 16   1959 46.31069</span></span>
+<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a><span class="co">#&gt; 17   1960 46.31065</span></span>
+<span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a><span class="co">#&gt; 18   1961 46.31063</span></span>
+<span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a><span class="co">#&gt; 19   1962 46.31062</span></span>
+<span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a><span class="co">#&gt; 20   1963 46.31061</span></span>
+<span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a><span class="co">#&gt; 21   1964 46.31061</span></span>
+<span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a><span class="co">#&gt; 22   1965 46.31061</span></span>
+<span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a><span class="co">#&gt; 23   1966 46.31061</span></span>
+<span id="cb14-27"><a href="#cb14-27" tabindex="-1"></a><span class="co">#&gt; 24   1967 46.31061</span></span>
+<span id="cb14-28"><a href="#cb14-28" tabindex="-1"></a><span class="co">#&gt; 25   1968 46.31061</span></span>
+<span id="cb14-29"><a href="#cb14-29" tabindex="-1"></a><span class="co">#&gt; 26   1969 48.13153</span></span>
+<span id="cb14-30"><a href="#cb14-30" tabindex="-1"></a><span class="co">#&gt; 27   1970 49.04199</span></span>
+<span id="cb14-31"><a href="#cb14-31" tabindex="-1"></a><span class="co">#&gt; 28   1971 49.49722</span></span>
+<span id="cb14-32"><a href="#cb14-32" tabindex="-1"></a><span class="co">#&gt; 29   1972 50.11777</span></span>
+<span id="cb14-33"><a href="#cb14-33" tabindex="-1"></a><span class="co">#&gt; 30   1973 50.97421</span></span>
+<span id="cb14-34"><a href="#cb14-34" tabindex="-1"></a><span class="co">#&gt; 31   1974 52.69475</span></span>
+<span id="cb14-35"><a href="#cb14-35" tabindex="-1"></a><span class="co">#&gt; 32   1975 53.54804</span></span>
+<span id="cb14-36"><a href="#cb14-36" tabindex="-1"></a><span class="co">#&gt; 33   1976 53.97128</span></span>
+<span id="cb14-37"><a href="#cb14-37" tabindex="-1"></a><span class="co">#&gt; 34   1977 54.18123</span></span>
+<span id="cb14-38"><a href="#cb14-38" tabindex="-1"></a><span class="co">#&gt; 35   1978 54.28539</span></span>
+<span id="cb14-39"><a href="#cb14-39" tabindex="-1"></a><span class="co">#&gt; 36   1979 54.33708</span></span>
+<span id="cb14-40"><a href="#cb14-40" tabindex="-1"></a><span class="co">#&gt; 37   1980 54.36273</span></span>
+<span id="cb14-41"><a href="#cb14-41" tabindex="-1"></a><span class="co">#&gt; 38   1981 54.37545</span></span>
+<span id="cb14-42"><a href="#cb14-42" tabindex="-1"></a><span class="co">#&gt; 39   1982 54.38177</span></span>
+<span id="cb14-43"><a href="#cb14-43" tabindex="-1"></a><span class="co">#&gt; 40   1983 54.38491</span></span>
+<span id="cb14-44"><a href="#cb14-44" tabindex="-1"></a><span class="co">#&gt; 41   1984 52.97968</span></span>
+<span id="cb14-45"><a href="#cb14-45" tabindex="-1"></a><span class="co">#&gt; 42   1985 52.27706</span></span>
+<span id="cb14-46"><a href="#cb14-46" tabindex="-1"></a><span class="co">#&gt; 43   1986 51.47441</span></span>
+<span id="cb14-47"><a href="#cb14-47" tabindex="-1"></a><span class="co">#&gt; 44   1987 50.83300</span></span>
+<span id="cb14-48"><a href="#cb14-48" tabindex="-1"></a><span class="co">#&gt; 45   1988 50.92375</span></span>
+<span id="cb14-49"><a href="#cb14-49" tabindex="-1"></a><span class="co">#&gt; 46   1989 50.97084</span></span>
+<span id="cb14-50"><a href="#cb14-50" tabindex="-1"></a><span class="co">#&gt; 47   1990 51.66014</span></span>
+<span id="cb14-51"><a href="#cb14-51" tabindex="-1"></a><span class="co">#&gt; 48   1991 52.05198</span></span>
+<span id="cb14-52"><a href="#cb14-52" tabindex="-1"></a><span class="co">#&gt; 49   1992 49.92513</span></span>
+<span id="cb14-53"><a href="#cb14-53" tabindex="-1"></a><span class="co">#&gt; 50   1993 54.62718</span></span>
+<span id="cb14-54"><a href="#cb14-54" tabindex="-1"></a><span class="co">#&gt; 51   1994 55.22873</span></span>
+<span id="cb14-55"><a href="#cb14-55" tabindex="-1"></a><span class="co">#&gt; 52   1995 58.85351</span></span>
+<span id="cb14-56"><a href="#cb14-56" tabindex="-1"></a><span class="co">#&gt; 53   1996 56.35075</span></span>
+<span id="cb14-57"><a href="#cb14-57" tabindex="-1"></a><span class="co">#&gt; 54   1997 56.99313</span></span>
+<span id="cb14-58"><a href="#cb14-58" tabindex="-1"></a><span class="co">#&gt; 55   1998 55.04247</span></span>
+<span id="cb14-59"><a href="#cb14-59" tabindex="-1"></a><span class="co">#&gt; 56   1999 52.54010</span></span>
+<span id="cb14-60"><a href="#cb14-60" tabindex="-1"></a><span class="co">#&gt; 57   2000 53.95874</span></span>
+<span id="cb14-61"><a href="#cb14-61" tabindex="-1"></a><span class="co">#&gt; 58   2001 54.32868</span></span>
+<span id="cb14-62"><a href="#cb14-62" tabindex="-1"></a><span class="co">#&gt; 59   2002 54.54125</span></span>
+<span id="cb14-63"><a href="#cb14-63" tabindex="-1"></a><span class="co">#&gt; 60   2003 55.65126</span></span>
+<span id="cb14-64"><a href="#cb14-64" tabindex="-1"></a><span class="co">#&gt; 61   2004 55.84265</span></span>
+<span id="cb14-65"><a href="#cb14-65" tabindex="-1"></a><span class="co">#&gt; 62   2005 55.27056</span></span>
+<span id="cb14-66"><a href="#cb14-66" tabindex="-1"></a><span class="co">#&gt; 63   2006 55.86224</span></span>
+<span id="cb14-67"><a href="#cb14-67" tabindex="-1"></a><span class="co">#&gt; 64   2007 55.52446</span></span>
+<span id="cb14-68"><a href="#cb14-68" tabindex="-1"></a><span class="co">#&gt; 65   2008 56.40909</span></span>
+<span id="cb14-69"><a href="#cb14-69" tabindex="-1"></a><span class="co">#&gt; 66   2009 59.04136</span></span>
+<span id="cb14-70"><a href="#cb14-70" tabindex="-1"></a><span class="co">#&gt; 67   2010 59.21175</span></span>
+<span id="cb14-71"><a href="#cb14-71" tabindex="-1"></a><span class="co">#&gt; 68   2011 59.26123</span></span>
+<span id="cb14-72"><a href="#cb14-72" tabindex="-1"></a><span class="co">#&gt; 69   2012 59.80284</span></span>
+<span id="cb14-73"><a href="#cb14-73" tabindex="-1"></a><span class="co">#&gt; 70   2013 59.73838</span></span>
+<span id="cb14-74"><a href="#cb14-74" tabindex="-1"></a><span class="co">#&gt; 71   2014 59.50999</span></span>
+<span id="cb14-75"><a href="#cb14-75" tabindex="-1"></a><span class="co">#&gt; 72   2015 57.28657</span></span>
+<span id="cb14-76"><a href="#cb14-76" tabindex="-1"></a><span class="co">#&gt; 73   2016 60.30479</span></span></code></pre></div>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>Jennings, W. N. Clarke, J. Moss and G. Stoker (2017). “The Decline in
+Diffuse Support for National Politics: The Long View on Political
+Discontent in Britain”, Public Opinion Quarterly, 81(3), 748-758. </p>
+<p>Stimson, James A. 2018. “The Dyad Ratios Algorithm for Estimating
+Latent Public Opinion: Estimation, Testing, and Comparison to Other
+Approaches.” Bulletin of Methodological Sociology 137-138:201–218. </p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
