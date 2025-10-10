@@ -62,19 +62,19 @@ library(dplyr)
 jennings %>% 
   group_by(variable) %>% 
   tally() %>% 
-  arrange(desc(n))
+  arrange(desc(n)) %>% 
+  print(n=40)
 
 ## -----------------------------------------------------------------------------
-jennings_out <- extract(
+jennings_out <- DyadRatios::extract(
   varname = jennings$variable, 
   date = jennings$date, 
   index = jennings$value, 
   ncases = jennings$n, 
-  begindt = min(jennings$date), 
+  begindt = lubridate::ymd("1985-01-01", tz="GMT"), 
   enddt = max(jennings$date), 
   npass=1
 )
-
 
 ## -----------------------------------------------------------------------------
 print(jennings_out)
@@ -82,10 +82,62 @@ print(jennings_out)
 ## -----------------------------------------------------------------------------
 summary(jennings_out)
 
-## -----------------------------------------------------------------------------
+## ----out.width="75%", fig.align="center", fig.height=5, fig.width=8-----------
 plot(jennings_out)
 
 ## -----------------------------------------------------------------------------
 ests <- get_mood(jennings_out)
 ests
+
+## -----------------------------------------------------------------------------
+data(jennings)
+jennings_boot <- boot_dr(
+  varname = jennings$variable, 
+  date = jennings$date, 
+  index = jennings$value, 
+  ncases = jennings$n, 
+  begindt = lubridate::ymd("1985-01-01"), 
+  enddt = max(jennings$date), 
+  npass=1, 
+  R=1000, 
+  parallel=FALSE, 
+  pw = TRUE
+)
+
+## -----------------------------------------------------------------------------
+head(jennings_boot$ci)
+
+## ----out.width="75%", fig.align="center", fig.height=5, fig.width=8-----------
+library(ggplot2)
+ggplot(jennings_boot$ci, aes(x=period)) + 
+  geom_ribbon(aes(ymin=lwr, ymax=upr), alpha=0.2) + 
+  geom_line(aes(y=latent1)) + 
+  labs(y="Mood (Distrust in Government)", x="Year") + 
+  theme_bw()
+
+## -----------------------------------------------------------------------------
+jennings_boot$pw %>% 
+  filter(p_diff > .95) %>% 
+  head()
+
+## ----out.width="75%", fig.align="center", fig.height=8, fig.width=8-----------
+library(tidyr)
+pwdiff <- jennings_boot$pw %>% 
+  mutate(diff_sig = ifelse(p_diff > .95, diff, 0))
+
+ggplot(pwdiff, aes(x=as.factor(p1), y=as.factor(p2), fill=diff_sig)) + 
+  geom_tile(color="black") + 
+  scale_fill_gradient2(low="#377eb8", mid="white", high="#e41a1c", na.value = "grey90") +
+  labs(x="From", y="To", fill = "To - From") + 
+  theme_classic() + 
+  theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1), 
+        legend.position = "inside", 
+        legend.position.inside = c(.85, .33))
+
+
+
+## -----------------------------------------------------------------------------
+jennings_boot$pw %>% 
+  filter(p_diff > .95 & p2 - p1 == 1) %>% 
+  arrange(diff)
 

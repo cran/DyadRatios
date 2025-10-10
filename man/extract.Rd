@@ -52,6 +52,8 @@ A list with components:
   \item \code{period}: List of aggregation periods.
   \item \code{varname}: List in order of the variables used in the analysis.
   \item \code{N}: Number of non-missing observations for each series.
+  \item \code{wtdmean}: The weighted mean of the input variables. 
+  \item \code{wtstd}: The weighted standard deviation of the input series. 
   \item \code{means}: Item descriptive information.
   \item \code{std.deviations}: Item descriptive information.
   \item \code{setup1}: Basic information about the options and iterative solution for the first dimension.
@@ -66,11 +68,18 @@ A list with components:
   \item \code{var_exp}: Data frame with variance explained and proportion of variance explained for each dimension.
   \item \code{dropped}: Data frame listing any series that were dropped from the analysis due to insufficient data.
   \item \code{smoothing}: Logical indicating whether smoothing was applied during the iterative solution process.
+  \item \code{ms_list}: List of means and variances for standardizing the input series for the bootstrap. 
 }
 }
 \description{
 Estimates the Dyad Ratios Algorithm for constructing latent time series from
 survey-research marginals.
+}
+\details{
+In previous versions of the algorithm, especially in its original incarnation as `Wcalc.exe`, getting the dates right was really important.  They needed to be in precisely the right format and the
+data needed to be ordered by date.  In this version of the `extract()` function, any R date class is fine whether it is a `Date` class or `POSIX*` class.  The function uses `is.Date` from the 
+`lubridate` package to check if it is a `Date` class and `as.Date()` from R's `base` package to coerce it to a `Date` class if it is not.  Further, the series are ordered by date in the function 
+as a matter of course, so it is not necessary that they be in ascending ordered of date in the input data.
 }
 \examples{
 data(jennings)
