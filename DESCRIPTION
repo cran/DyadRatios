@@ -1,8 +1,8 @@
 Package: DyadRatios
 Type: Package
 Title: Dyad Ratios Algorithm
-Version: 1.3
-Date: 2025-09-22
+Version: 1.4
+Date: 2026-04-08
 Authors@R: c(person("Dave", "Armstrong", role=c("cre"), email="davearmstrong.ps@gmail.com"), 
              person("James", "Stimson", role=c("aut"))) 
 Description: Estimates the Dyad Ratios Algorithm for pooling and smoothing poll estimates. The Dyad Ratios Algorithm smooths both forward and backward in time over polling results allowing differences in both question type and polling house. The result is an estimate of a single latent variable that describes the systematic trend over time in the (noisy) polling results. See James A. Stimson (2018) <doi:10.1177/0759106318761614> and the package's vignette for more details. 
@@ -12,11 +12,11 @@ License: GPL (>= 2)
 Encoding: UTF-8
 Suggests: dplyr, rio, knitr, rmarkdown, parallel, tidyr
 VignetteBuilder: knitr
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 NeedsCompilation: no
-Packaged: 2025-10-10 17:36:55 UTC; david
+Packaged: 2026-04-08 16:40:16 UTC; david
 Author: Dave Armstrong [cre],
   James Stimson [aut]
 Maintainer: Dave Armstrong <davearmstrong.ps@gmail.com>
 Repository: CRAN
-Date/Publication: 2025-10-10 18:20:02 UTC
+Date/Publication: 2026-04-08 20:40:02 UTC
