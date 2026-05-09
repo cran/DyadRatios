@@ -66,15 +66,18 @@ jennings %>%
   print(n=40)
 
 ## -----------------------------------------------------------------------------
+
 jennings_out <- DyadRatios::extract(
-  varname = jennings$variable, 
-  date = jennings$date, 
-  index = jennings$value, 
-  ncases = jennings$n, 
-  begindt = lubridate::ymd("1985-01-01", tz="GMT"), 
-  enddt = max(jennings$date), 
-  npass=1
-)
+  jennings,  
+  varname_col = "variable", 
+  date_col = "date", 
+  index_col = "value", 
+  n_col = "n", 
+  agg_interval = "annual", 
+  start_date = lubridate::ymd("1985-01-01", tz="GMT"), 
+  end_date = max(jennings$date), 
+  n_dim = 1, 
+  smoothing = TRUE)
 
 ## -----------------------------------------------------------------------------
 print(jennings_out)
@@ -92,26 +95,18 @@ ests
 ## -----------------------------------------------------------------------------
 data(jennings)
 jennings_boot <- boot_dr(
-  varname = jennings$variable, 
-  date = jennings$date, 
-  index = jennings$value, 
-  ncases = jennings$n, 
-  begindt = lubridate::ymd("1985-01-01"), 
-  enddt = max(jennings$date), 
-  npass=1, 
-  R=1000, 
-  parallel=FALSE, 
-  pw = TRUE
-)
+  obj = jennings_out, 
+  data = jennings, 
+  R=50L, pw=TRUE)
 
 ## -----------------------------------------------------------------------------
-head(jennings_boot$ci)
+head(jennings_boot$estimates)
 
 ## ----out.width="75%", fig.align="center", fig.height=5, fig.width=8-----------
 library(ggplot2)
-ggplot(jennings_boot$ci, aes(x=period)) + 
-  geom_ribbon(aes(ymin=lwr, ymax=upr), alpha=0.2) + 
-  geom_line(aes(y=latent1)) + 
+ggplot(jennings_boot$estimates, aes(x=year, y=mood, ymin = lower, ymax=upper)) + 
+  geom_ribbon( alpha=0.2) + 
+  geom_line() + 
   labs(y="Mood (Distrust in Government)", x="Year") + 
   theme_bw()
 
